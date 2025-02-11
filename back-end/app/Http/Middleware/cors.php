@@ -24,21 +24,25 @@ class Cors
      */
     public function handle(Request $request, Closure $next)
     {
-        // Si c'est une requête OPTIONS (préflight), on renvoie directement une réponse vide avec les en-têtes CORS
-        if ($request->getMethod() === 'OPTIONS') {
-            return response('', Response::HTTP_OK)
-                ->header('Access-Control-Allow-Origin', '*')
-                ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-                ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        // Définition des en-têtes CORS communs pour toutes les méthodes HTTP
+        $corsHeaders = [
+            'Access-Control-Allow-Origin'  => '*',
+            'Access-Control-Allow-Methods' => 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+            'Access-Control-Allow-Headers' => 'Content-Type, Authorization, X-Requested-With',
+        ];
+
+        // Si la méthode est OPTIONS (requête préflight), renvoyer immédiatement une réponse avec les en-têtes
+        if ($request->isMethod('OPTIONS')) {
+            return response()->json('OK', Response::HTTP_OK, $corsHeaders);
         }
 
-        // Pour les autres requêtes, on laisse le middleware suivant traiter la requête
+        // Pour les autres méthodes (GET, POST, PUT, DELETE, PATCH, etc.), traiter la requête normalement
         $response = $next($request);
 
-        // Ajout des en-têtes CORS à la réponse
-        $response->header('Access-Control-Allow-Origin', '*')
-                 ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-                 ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        // Ajouter les en-têtes CORS à la réponse
+        foreach ($corsHeaders as $header => $value) {
+            $response->headers->set($header, $value);
+        }
 
         return $response;
     }

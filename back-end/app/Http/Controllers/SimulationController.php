@@ -9,22 +9,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\SimulationRequest;
+use App\Models\Simulation;
 use App\Services\SimulationService;
-use App\Models\Simulation; // Pour l'extension bonus
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class SimulationController extends Controller
 {
-    /**
-     * Service de calcul injecté via le constructeur pour respecter l'injection de dépendance.
-     *
-     * @var SimulationService
-     */
-    protected $simulationService;
+    protected SimulationService $simulationService;
 
     /**
-     * Constructeur.
+     * Injection du service via le constructeur.
      *
      * @param SimulationService $simulationService
      */
@@ -34,46 +29,59 @@ class SimulationController extends Controller
     }
 
     /**
-     * Gère la simulation de l'intérêt composé.
+     * Calcule l'intérêt composé et enregistre la simulation.
      *
-     * @param SimulationRequest $request
+     * @param Request $request
      * @return JsonResponse
      */
-    public function simulateInterest(SimulationRequest $request): JsonResponse
+    public function simulateInterest(Request $request): JsonResponse
     {
-        // Récupération des paramètres validés
-        $data = $request->validated();
+        try {
+            $data = $request->json()->all();
 
-        // Calcul de l'intérêt composé
-        $result = $this->simulationService->calculateCompoundInterest($data['capital'], $data['rate'], $data['years']);
+            if (!isset($data['capital'], $data['rate'], $data['years'])) {
+                return response()->json(['message' => 'Données manquantes'], 422);
+            }
 
-        // (Extension Bonus) Enregistrement de la simulation en base de données
-        Simulation::create([
-            'capital' => $data['capital'],
-            'rate'    => $data['rate'],
-            'years'   => $data['years'],
-            'result'  => round($result, 2),
-        ]);
+            $result = $this->simulationService->calculateCompoundInterest(
+                (float)$data['capital'],
+                (float)$data['rate'],
+                (int)$data['years']
+            );
 
-        // Retourne le résultat sous forme de JSON
-        return response()->json([
-            'capital' => $data['capital'],
-            'rate'    => $data['rate'],
-            'years'   => $data['years'],
-            'result'  => round($result, 2)
-        ]);
-        
+            // Enregistrement de la simulation dans la base de données
+            Simulation::create([
+                'capital' => $data['capital'],
+                'rate'    => $data['rate'],
+                'years'   => $data['years'],
+                'result'  => $result,
+            ]);
+
+            return response()->json([
+                'capital' => $data['capital'],
+                'rate'    => $data['rate'],
+                'years'   => $data['years'],
+                'result'  => $result,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Erreur dans simulateInterest : ' . $e->getMessage());
+            return response()->json(['message' => 'Erreur interne du serveur'], 500);
+        }
     }
 
-
     /**
-     * (Extension Bonus) Retourne la liste de toutes les simulations enregistrées.
+     * Retourne l'historique des simulations.
      *
      * @return JsonResponse
      */
     public function index(): JsonResponse
     {
-        $simulations = Simulation::all();
-        return response()->json($simulations);
+        try {
+            $simulations = Simulation::all();
+            return response()->json($simulations);
+        } catch (\Exception $e) {
+            \Log::error('Erreur dans index : ' . $e->getMessage());
+            return response()->json(['message' => 'Erreur interne du serveur'], 500);
+        }
     }
 }

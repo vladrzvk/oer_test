@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SimulationController;
 
 // Endpoint pour simuler l'intérêt composé
-Route::post('/api/simulate-interest', [SimulationController::class, 'simulateInterest']);
+Route::post('/simulate-interest', [SimulationController::class, 'simulateInterest']);
 
 // (Extension Bonus) Endpoint pour récupérer l'historique des simulations
-Route::get('/api/simulations', [SimulationController::class, 'index']);
+Route::get('/simulations', [SimulationController::class, 'index']);
