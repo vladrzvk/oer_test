@@ -32,6 +32,6 @@ Ce projet propose une simulation simplifiée d'intérêts composés avec :
 
 ### LICENCE D’UTILISATION RESTREINTE
 
-Ce programme et son code source sont la propriété exclusive de Vladislav.  
+Ce programme et son code source sont la propriété exclusive de Vladislav Razyvika.  
 Aucune utilisation, reproduction, modification, distribution ou exploitation commerciale ne sont autorisées sans un accord écrit préalable.  
 Toute violation pourra donner lieu à des poursuites conformément aux lois sur le droit d’auteur en vigueur.

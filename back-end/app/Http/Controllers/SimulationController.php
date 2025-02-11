@@ -62,7 +62,9 @@ class SimulationController extends Controller
             'years'   => $data['years'],
             'result'  => round($result, 2)
         ]);
+        
     }
+
 
     /**
      * (Extension Bonus) Retourne la liste de toutes les simulations enregistrées.
